@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/react/0.14.7/react.js" integrity="sha256-42buMtfeO85Sgs1Be9myInpzVav/7JopgIzV9kZTU8U=" crossorigin="anonymous"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/react/0.14.7/react-dom.js" integrity="sha256-gqW8xjwh0Mn7ydWfQzO8UumlK0xT/e2mwX06WCf6vKY=" crossorigin="anonymous"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-core/5.8.25/browser.js" integrity="sha256-lgD7An0OgIYjra5hZznSSZyMJpMHWIITT0dJttd2Ag8=" crossorigin="anonymous"></script>
+  <title>Document</title>
+</head>
+<body>
+  <div class='container'>
+    <div class="row">
+      <div class="col-md-8">
+        <div id="app"></div>
+      </div>
+    </div>
+  </div>
+
+  <script type='text/babel'>
+    var App = React.createClass({
+      getInitialState: function() {
+        return {
+          text: '',
+          isEdit: 0,
+          todos: [
+            {
+              id: 1,
+              text: 'Some title',
+            },
+            {
+              id: 2,
+              text: 'Some second title',
+            },
+            {
+              id: 3,
+              text: 'Some third title',
+            }
+          ]
+        }
+      },
+
+      handleAddTodo: function(text) {
+        var newTodo = {
+          id: this.state.todos.length + 1,
+          text: text
+        }
+
+        this.setState({todos: this.state.todos.concat(newTodo)})
+      },
+
+      handleTodoDelete: function(todo) {
+        var todos = this.state.todos;
+
+        for(var i = 0; i < todos.length; i++) {
+          if(todos[i].id == todo.id) {
+            todos.splice(i, 1);
+          }
+        }
+
+        this.setState({todos: todos});
+      },
+
+      handleTodoEdit: function(todo) {
+        this.setState({
+          text: todo.text,
+          isEdit: todo.id
+        });
+      },
+
+      handleChangeText: function(text) {
+        this.setState({text: text})
+      },
+
+      handleTodoUpdate : function(todo) {
+        var todos = this.state.todos;
+
+        for(var i = 0; i < todos.length; i++) {
+          if(todos[i].id == todo.id) {
+            todos.splice(i, 1);
+          }
+        }
+
+        todos.push(todo);
+        this.setState({todos: todos});
+        console.log(this.state.todos)
+      },
+
+      render: function() {
+        return (
+          <div>
+            <TodoForm 
+            {...this.state}
+            changeText={this.handleChangeText}
+            onTodoUpdate={this.handleTodoUpdate}
+            onTodoAdd={this.handleAddTodo} />
+            <TodoList 
+            {...this.state}
+            editTodo={this.handleTodoEdit}
+            deleteTodo={this.handleTodoDelete} />
+          </div>
+        );
+      }
+    });
+
+    var TodoForm = React.createClass({
+      handleChange: function(e) {
+        this.props.changeText(e.target.value)
+      },
+
+      onSubmit: function(e) {
+        e.preventDefault();
+
+        var text = this.refs.text.value.trim();
+
+        if(!text) {
+          console.log('Enter a text');
+          return;
+        }
+
+        if(this.props.isEdit) {
+          var updatedTodo = {
+            id: this.props.isEdit,
+            text: text
+          }
+
+          this.props.onTodoUpdate(updatedTodo);
+        } else { 
+          this.props.onTodoAdd(text); 
+        }
+
+        this.props.onTodoAdd(text);
+        this.refs.text.value = '';
+      },
+
+      render: function() {
+        return (
+          <form onSubmit={this.onSubmit}>
+            <div className='form-group'>
+              <label>todo text</label>
+              <input type="text" ref='text' value={this.props.text} onChange={this.handleChange} className='form-control' />
+            </div>
+          </form>
+        );
+      }
+    });
+
+    var TodoList = React.createClass({
+      onDelete: function(todo) {
+        this.props.deleteTodo(todo);
+      },
+
+      handleEdit: function(todo) {
+        this.props.editTodo(todo);
+      },
+
+      render: function() {
+        return (
+          <ul className='list-group'>
+            {
+              this.props.todos.map(function(todo) {
+                return (
+                  <li todo={todo} key={todo.id} className='list-group-item'> 
+                    <span onClick={this.handleEdit.bind(this, todo)}> {todo.text} </span>
+                    <button onClick={this.onDelete.bind(this, todo)}> X </button>
+                  </li>
+                )
+              }, this)
+            }
+          </ul>
+        );
+      }
+    });
+
+    ReactDOM.render(
+      <App />,
+      document.getElementById('app')
+    );
+  </script>
+</body>
+</html>
